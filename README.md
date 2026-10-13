@@ -1,20 +1,32 @@
 # Employee Attendance & Analytics API
 
-Python 3.11+, FastAPI, and MongoDB implementation for the HROne assignment.
+Python 3.11+, FastAPI, and MongoDB implementation for the HROne Software Engineer Trainee assignment.
 
 ## Setup (Windows PowerShell)
+
+Run these commands from the project root:
 
 ```powershell
 py -3.11 -m venv .venv
 .\.venv\Scripts\Activate.ps1
-python -m pip install --upgrade pip
-pip install -r requirements.txt
-Copy-Item .env.example .env
-python sample_seed.py
-uvicorn app.main:app --reload --port 8000
+python -m pip install -r requirements.txt
 ```
 
-Set `MONGO_URI` and `MONGO_DB` in `.env`. Keep `.env` private.
+Create a `.env` file in the project root with your MongoDB settings:
+
+```env
+MONGO_URI=mongodb+srv://<username>:<password>@<cluster-url>/
+MONGO_DB=attendance_db
+```
+
+Use your own MongoDB Atlas connection details. Keep `.env` private and never commit credentials.
+
+Seed the sample data and start the API:
+
+```powershell
+python sample_seed.py
+python -m uvicorn app.main:app --reload --port 8000
+```
 
 Swagger UI: http://127.0.0.1:8000/docs
 
@@ -25,16 +37,6 @@ Swagger UI: http://127.0.0.1:8000/docs
 
 The API uses `emp_code` as the employee identifier; MongoDB `_id` is internal.
 
-## Important
+## Status and Limitations
 
-Review every business rule in the supplied `openapi.yaml` and `DATA_MODEL.md`.
-Run edge-case tests, especially concurrent requests, timestamp validation, analytics
-rounding, the 92-day trend limit, and explain-plan requirements before submission.
-Do not submit `.env`, secrets, or a Dockerfile.
-
-## Known limitations to verify before submission
-
-This starter implementation is a working baseline, not a guarantee of passing the
-hidden grader. In particular, verify aggregation explain plans, the trend pipeline's
-index usage, all endpoint-specific explain query equivalence, strict request timestamp
-validation, and all R1-R10 edge cases against the original contract.
+This is a work in progress. Before submission, verify the business rules in the original API contract and data model, including timestamp validation, concurrent requests, analytics rounding, the 92-day trend limit, audit trails, and MongoDB explain-plan/index requirements. Any incomplete functionality should be documented accurately.
