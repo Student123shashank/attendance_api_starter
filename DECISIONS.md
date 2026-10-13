@@ -1,11 +1,11 @@
 # Design Decisions
 
-1. **Indexes.** A unique `employees.emp_code` index guarantees unique business identifiers. A unique `(emp_code, date)` index guarantees one attendance record per employee/day and resolves simultaneous punch-ins. Additional date and employee/date indexes support list and analytics filters. I would reject redundant indexes unless query plans show a measurable benefit.
+1. **Indexes.** A unique index on `employees.emp_code` enforces unique business identifiers. A unique compound index on `(emp_code, date)` ensures at most one attendance record per employee per day. Additional indexes should support actual filtering and sorting patterns. Redundant indexes should be avoided unless query-plan analysis demonstrates a measurable benefit.
 
-2. **Punch-in race.** Both requests may pass an initial read, but only one insert can satisfy the unique compound index. MongoDB rejects the other insert with a duplicate-key error, which the API converts to HTTP 409.
+2. **Punch-in concurrency.** Concurrent requests may both pass an initial existence check. The unique compound index remains the final safeguard against duplicate attendance records. Duplicate-key errors are handled and translated into HTTP 409 Conflict responses.
 
-3. **Ties.** The leaderboard uses competition ranking, so tied totals share a rank and the next rank is skipped. The limit is applied to rank, not array position, so all employees tied at the cutoff rank are included.
+3. **Leaderboard ties.** The leaderboard uses competition ranking: employees with equal totals share a rank, and the next rank is skipped. If the contract requires including all employees tied at the cutoff rank, the limit must be applied by rank rather than by array position.
 
-4. **Headcount.** Department summary starts from eligible employee documents and looks up logs, preserving employees without attendance records.
+4. **Department headcount.** Department summaries should start from the eligible employee set and join attendance data so employees without attendance logs are not excluded from headcount calculations.
 
-5. **Scaling.** At 100x volume, I would benchmark real query plans, verify index selectivity, and measure aggregation latency before adding or changing indexes.
+5. **Scaling and index selection.** At substantially higher data volumes, I would benchmark representative queries, inspect MongoDB execution plans, evaluate index selectivity, and measure aggregation latency before introducing or changing indexes.
